@@ -1,6 +1,6 @@
 # Next.js + Three.js load GLTF models
 
-https://ibb.co/WvJ2m6h
+![](https://ibb.co/WvJ2m6h)
 
 Example of how to upload GLTF models in Next.js application. Made for the [article](https://oslavdev.medium.com/load-animated-gltf-models-in-next-js-app-with-three-js-8cf0a5d99e10) on Medium.
 
