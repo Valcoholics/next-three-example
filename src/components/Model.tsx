@@ -3,108 +3,51 @@ import { useFrame } from "react-three-fiber";
 import * as THREE from "three";
 import { Html } from "drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
-import { Object3D } from "three/src/core/Object3D"; // Object3D types
-import { AnimationClip } from "three/src/animation/AnimationClip"; // Animation types
-
-interface GroupRef {
-  current: {
-    rotation: {
-      x: number;
-      y: number;
-    };
-  };
-}
-
-interface ActionsRef {
-  current: {
-    idle: {
-      play: () => void;
-    };
-  } | null;
-}
 
 const Model = () => {
-  /* Refs */
-  const group = useRef<GroupRef | null>(null);
-  const actions = useRef<ActionsRef | null>(null);
+  const group = useRef<THREE.Group | null>(null);
+  const [model, setModel] = useState<THREE.Object3D | null>(null);
 
-  /* State */
-  const [model, setModel] = useState<Object3D | null>(null);
-  const [animation, setAnimation] = useState<AnimationClip[] | null>(null);
-
-  /* Mixer */
-  const [mixer] = useState(() => new THREE.AnimationMixer(null));
-
-  /* Load model */
+  // Load model
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.load(
-      "scene.gltf",
-      async (gltf) => {
-        try {
-          const nodes = await gltf.parser.getDependencies("node");
-          const animations = await gltf.parser.getDependencies("animation");
-
-          // Ensure the model and animations are valid before setting
-          if (
-            nodes &&
-            nodes.length > 0 &&
-            animations &&
-            animations.length > 0
-          ) {
-            setModel(nodes[0]);
-            setAnimation(animations);
-          } else {
-            console.warn("GLTF model or animations are missing or invalid.");
-          }
-        } catch (error) {
-          console.error("Error loading GLTF model:", error);
-        }
+      "/scene.gltf", // Path to your GLTF file in the public folder
+      (gltf) => {
+        const loadedModel = gltf.scene;
+        loadedModel.scale.set(75, 75, 75); // Increase scale significantly
+        loadedModel.position.set(-75, -75, -75); // Adjust position as needed
+        setModel(loadedModel);
       },
       undefined,
       (error) => {
-        console.error("Error occurred while loading the model:", error);
+        console.error("Error loading GLTF model:", error);
       }
     );
   }, []);
 
-  /* Set animation */
-  useEffect(() => {
-    if (animation && group.current) {
-      const idleAction = mixer.clipAction(
-        animation[0],
-        (group.current as unknown) as Object3D
-      );
-      if (idleAction) {
-        actions.current = { idle: idleAction };
-        actions.current.idle.play();
-      }
-
-      return () => {
-        if (animation) {
-          animation.forEach((clip) => mixer.uncacheClip(clip));
-        }
-      };
-    }
-  }, [animation, mixer]);
-
-  /* Animation update */
-  useFrame((_, delta) => {
-    if (mixer) mixer.update(delta);
-  });
-
-  /* Rotation */
-  useFrame(() => {
+  // Mouse movement
+  const handleMouseMove = (event: MouseEvent) => {
     if (group.current) {
-      group.current.rotation.y += 0.01;
+      const x = (event.clientX / window.innerWidth) * 2 - 1;
+      const y = -(event.clientY / window.innerHeight) * 2 + 1;
+      group.current.rotation.y = x * Math.PI; // Rotate based on mouse X
+      group.current.rotation.x = y * Math.PI; // Rotate based on mouse Y
     }
-  });
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
 
   return (
     <>
       {model ? (
-        <group ref={group} position={[0, -150, 0]} dispose={null}>
-          <primitive name="Object_0" object={model} />
+        <group ref={group} dispose={null}>
+          <primitive object={model} />
         </group>
       ) : (
         <Html>Loading...</Html>
