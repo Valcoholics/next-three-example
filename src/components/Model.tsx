@@ -4,19 +4,34 @@ import * as THREE from "three";
 import { Html } from "drei";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader";
 
+import vertexShader from "./public/shaders/vertex.glsl";
+import fragmentShader from "./public/shaders/fragment.glsl";
+
 const Model = () => {
   const group = useRef<THREE.Group | null>(null);
   const [model, setModel] = useState<THREE.Object3D | null>(null);
+
+  // Create a custom shader material
+  const shaderMaterial = new THREE.ShaderMaterial({
+    vertexShader: vertexShader,
+    fragmentShader: fragmentShader,
+  });
 
   // Load model
   useEffect(() => {
     const loader = new GLTFLoader();
     loader.load(
-      "/scene.gltf", // Path to your GLTF file in the public folder
+      "/scene.gltf",
       (gltf) => {
         const loadedModel = gltf.scene;
-        loadedModel.scale.set(75, 75, 75); // Increase scale significantly
-        loadedModel.position.set(-75, -75, -75); // Adjust position as needed
+        loadedModel.traverse((child) => {
+          // {{ edit_3 }}
+          if (child instanceof THREE.Mesh) {
+            child.material = shaderMaterial; // Apply your shader material
+          }
+        });
+        loadedModel.scale.set(75, 75, 75);
+        loadedModel.position.set(-75, -75, -75);
         setModel(loadedModel);
       },
       undefined,

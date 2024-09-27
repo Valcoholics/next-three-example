@@ -1,6 +1,6 @@
 # Phlote Viz - NextJS
 
-![](https://ibb.co/WvJ2m6h)
+![](readme/scene.gif)
 
 ## How to run
 
@@ -17,4 +17,4 @@ $ npm run dev
 
 to start development server
 
-the app will run on http://localhost:3cd000/
+the app will run on http://localhost:3000/
