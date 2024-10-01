@@ -15,6 +15,7 @@ const Model = () => {
   const shaderMaterial = new THREE.ShaderMaterial({
     vertexShader: vertexShader,
     fragmentShader: fragmentShader,
+    //wireframe: true,
   });
 
   // Load model
